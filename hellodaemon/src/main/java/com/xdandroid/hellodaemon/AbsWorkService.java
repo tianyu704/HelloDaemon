@@ -4,7 +4,8 @@ import android.app.*;
 import android.content.*;
 import android.content.pm.*;
 import android.os.*;
-import android.support.annotation.*;
+
+import androidx.annotation.Nullable;
 
 public abstract class AbsWorkService extends Service {
 
@@ -22,17 +23,25 @@ public abstract class AbsWorkService extends Service {
 
     /**
      * 是否 任务完成, 不再需要服务运行?
+     *
      * @return 应当停止服务, true; 应当启动服务, false; 无法判断, 什么也不做, null.
      */
     public abstract Boolean shouldStopService(Intent intent, int flags, int startId);
+
     public abstract void startWork(Intent intent, int flags, int startId);
+
     public abstract void stopWork(Intent intent, int flags, int startId);
+
     /**
      * 任务是否正在运行?
+     *
      * @return 任务正在运行, true; 任务当前不在运行, false; 无法判断, 什么也不做, null.
      */
     public abstract Boolean isWorkRunning(Intent intent, int flags, int startId);
-    @Nullable public abstract IBinder onBind(Intent intent, Void alwaysNull);
+
+    @Nullable
+    public abstract IBinder onBind(Intent intent, Void alwaysNull);
+
     public abstract void onServiceKilled(Intent rootIntent);
 
     /**
@@ -50,7 +59,8 @@ public abstract class AbsWorkService extends Service {
         //业务逻辑: 实际使用时，根据需求，将这里更改为自定义的条件，判定服务应当启动还是停止 (任务是否需要运行)
         Boolean shouldStopService = shouldStopService(intent, flags, startId);
         if (shouldStopService != null) {
-            if (shouldStopService) stopService(intent, flags, startId); else startService(intent, flags, startId);
+            if (shouldStopService) stopService(intent, flags, startId);
+            else startService(intent, flags, startId);
         }
 
         if (mFirstStarted) {
@@ -83,7 +93,7 @@ public abstract class AbsWorkService extends Service {
 
     /**
      * 停止服务并取消定时唤醒
-     *
+     * <p>
      * 停止服务使用取消订阅的方式实现，而不是调用 Context.stopService(Intent name)。因为：
      * 1.stopService 会调用 Service.onDestroy()，而 AbsWorkService 做了保活处理，会把 Service 再拉起来；
      * 2.我们希望 AbsWorkService 起到一个类似于控制台的角色，即 AbsWorkService 始终运行 (无论任务是否需要运行)，
